@@ -1,0 +1,4 @@
+- Work on the (Twitter Climate Change)[https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/5QCCUU] corpus:
+	- extract keywords
+	- train a binary classifier?
+- 
