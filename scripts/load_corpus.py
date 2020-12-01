@@ -1,6 +1,5 @@
 import os
 import argparse
-import re
 import csv
 import pandas as pd
 from spacy.lang.en import English
@@ -21,8 +20,8 @@ def load_corpus(DIR_NAME):
     return articles
 
 def preprocess(corpus):
-    """Preprocesses the corpus."""
-    corpus = [re.sub('\n', '', str(item)) for article in corpus for item in article]
+    """Preprocesses the corpus and flattens it."""
+    corpus = [item.rstrip() for article in corpus for item in article]
     corpus = [item for item in corpus if item != ""]
     return corpus
 
