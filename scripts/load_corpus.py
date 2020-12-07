@@ -2,11 +2,14 @@ import os
 import argparse
 import csv
 import pandas as pd
+import spacy
 from spacy.lang.en import English
 from spacy.pipeline import Sentencizer
+from sentence_transformers import SentenceTransformer
 
 parser = argparse.ArgumentParser(description="what")
 parser.add_argument('--path', type=str, help='path to the folder with files')
+parser.add_argument('--flatten', type=int, help='return a list of sentences(1) or a list of paragraphs(0)', default=1)
 args = parser.parse_args()
 
 def load_corpus(DIR_NAME):
@@ -39,17 +42,25 @@ def flatten(corpus):
             temp.append(sent)
     return temp
 
-# def tokenize(corpus)
-# tokenizer = Tokenizer(nlp.vocab)
-
-# accept an argument that defines what's being returned: articles on a sentence level,
-# or articles on an article level
-# If on a sentence level, the results could be saved inside a csv file?
-
 if __name__ == '__main__':
+    print("Loading BERT model")
+    model = SentenceTransformer('bert-base-nli-cls-token')
     path_name = args.path
-    articles = load_corpus(path_name)
-    articles = preprocess(articles)
-    articles = flatten(articles)
-    df = pd.DataFrame(pd.Series(str(article) for article in articles))
-    df.to_csv('articles.csv')
+    documents = load_corpus(path_name)
+    documents = preprocess(documents)
+    if args.flatten == 1:
+        documents = flatten(documents)
+        print("Number of sentences:", len(documents))
+        print("Calculating embeddings...")
+        embedding = pd.Series([model.encode(str(document)) for document in documents])
+        text = pd.Series(str(document) for document in documents)
+        df = pd.DataFrame({"text":text, "embedding":embedding})
+        df.to_csv('corpus_sentences.csv')
+    else:
+        print("Number of paragraphs:", len(documents))
+        print("Calculating embeddings...")
+        embedding = pd.Series([model.encode(str(document)) for document in documents])
+        text = pd.Series(str(document) for document in documents)
+        df = pd.DataFrame({"text":text, "embedding":embedding})
+        df.to_csv('corpus_paragraphs.csv')
+    print("Done!")
